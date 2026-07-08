@@ -132,6 +132,14 @@ $ip-proposal = 读取 ip-proposal/SKILL.md 和 Required References，调查权�
 
 最终聊天回复应尽量简短，只交付报告路径或下载链接。实质分析放在 Word 报告里。
 
+交付前必须做一次形式错误扫描：
+
+```bash
+python3 ip-proposal/scripts/check_docx_formal_errors.py /path/to/report.docx
+```
+
+扫描结果必须是 `formal error scan passed: 0 hits`。如果出现 `[object Object]`、`undefined`、`null`、`NaN` 等内容，说明生成报告时把对象、数组、空值或工具结果直接写进了 Word，需要先修正字段展开逻辑，再重新生成报告。
+
 ## 注意事项
 
 `IP-Proposal` 是诉讼策略和证据组织工具，不保证法院立案、胜诉或具体赔偿金额。正式起诉前，应由律师基于官方权利记录、公证证据、平台披露数据、实物证据和最新法律规则复核。

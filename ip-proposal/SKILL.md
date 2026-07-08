@@ -57,6 +57,7 @@ Helpful optional inputs:
 11. Do not use receiving place, purchase place, payment place, or plaintiff-arranged notarized delivery place as an independent jurisdiction basis. Treat purchase/delivery as evidence preservation, not a jurisdiction shortcut.
 12. State evidence gaps and the next facts needed to upgrade the claim amount.
 13. Do not promise litigation outcome.
+14. When generating a `.docx`, never pass raw objects, arrays, promises, or tool result dictionaries into `TextRun`, template strings, table cells, or markdown-to-docx converters. Normalize every table cell and paragraph to a human-readable string first; object values must be expanded into named fields or summarized.
 
 ## Working Method
 
@@ -73,7 +74,7 @@ Helpful optional inputs:
 11. Select candidate courts using `jurisdiction-defendants.md`.
 12. Build claim amount using `evidence-damages-defenses.md`; use empirical ratio only as calibration, not as proof.
 13. Predict defenses and prescribe counter-evidence.
-14. Output using `output-template.md`. For full reports, generate a polished `.docx`, render-check it when the documents toolchain is available, and return the final file path.
+14. Output using `output-template.md`. For full reports, generate a polished `.docx`, render-check it when the documents toolchain is available, run `scripts/check_docx_formal_errors.py` on the final file, and return the final file path only after the scan passes.
 
 ## Source And Basis Requirements
 
@@ -121,3 +122,4 @@ Before finalizing a case assessment, confirm the output includes:
 - Expected defendant defenses and counter-evidence.
 - Public-source or evidence basis for important factual claims.
 - Immediate action list.
+- DOCX formal-error scan passed with zero hits for `[object Object]`, `[object Promise]`, `[object Array]`, `undefined`, `null`, and `NaN`; if it fails, fix the generation logic or regenerate the report before delivery.

@@ -16,6 +16,14 @@ DOCX requirements:
 - Classify facts as `已核验事实`, `强推定事实`, `待核验事实`, or `法律判断`.
 - If visual product comparison is important, include side-by-side images when available; if images cannot be captured, include a feature-by-feature comparison table and state the gap.
 - If the document toolchain is available, render the `.docx` to page images and visually inspect before delivery.
+- Before delivery, run `scripts/check_docx_formal_errors.py {report.docx}`. The report must have zero hits for object-stringification or placeholder tokens such as `[object Object]`, `[object Promise]`, `[object Array]`, `undefined`, `null`, or `NaN`. If any hit appears, inspect the source field, expand the object into readable text, regenerate the DOCX, and scan again.
+
+DOCX generation safety:
+
+- Convert every paragraph, list item, heading, caption, and table cell to a string intentionally.
+- For structured values, write named fields such as `状态：已注册` or `证据等级：待核验`; do not rely on JavaScript/Python default string conversion.
+- For arrays, join readable item strings after mapping each item to text; never join raw objects.
+- For missing data, use `待核验`, `未检索到公开结果`, or `需官方核验`, not `undefined`, `null`, or empty object output.
 
 Chat response after generating the DOCX:
 
