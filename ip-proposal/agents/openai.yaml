@@ -1,0 +1,4 @@
+interface:
+  display_name: "IP-Proposal"
+  short_description: "Generate PRC IP litigation proposal reports"
+  default_prompt: "Use $ip-proposal to access blocked platform pages where possible, investigate public clues, rights, packaging or expression similarity, sales scale, defendants, jurisdiction, damages, and generate a DOCX IP litigation proposal."
