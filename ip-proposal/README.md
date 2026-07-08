@@ -60,7 +60,8 @@ GitHub 地址：https://github.com/xiexiaoxiong/skills/tree/main/ip-proposal
 请你自行完成安装：
 1. 如果你支持 Codex/OpenAI 风格的 skill，请把该目录安装为 ip-proposal，并确保我可以用 $ip-proposal 调用；
 2. 如果你不支持这种 skill 机制，请把 SKILL.md 和 references/ 作为你的提示词包/知识包，并配置 $ip-proposal 别名；
-3. 安装后告诉我具体调用方式，并用一句话确认你会在完整评估时生成 DOCX 诉讼方案报告。
+3. 安装后进入 ip-proposal 目录运行 bash scripts/setup_env.sh，安装图片处理和 DOCX 生成依赖；
+4. 安装后告诉我具体调用方式，并用一句话确认你会在完整评估时生成 DOCX 诉讼方案报告。
 ```
 
 如果你是手动给 Codex 安装，也可以用下面的方式。
@@ -69,6 +70,8 @@ GitHub 地址：https://github.com/xiexiaoxiong/skills/tree/main/ip-proposal
 
 ```bash
 cp -R ip-proposal ~/.codex/skills/
+cd ~/.codex/skills/ip-proposal
+bash scripts/setup_env.sh
 ```
 
 然后在 Codex 中这样调用：
@@ -108,6 +111,15 @@ Codex 会通过 `SKILL.md` 的 frontmatter 自动识别该 skill。正式 skill 
    - 本地文件读写；
    - `.docx` 生成能力；
    - 必要时允许用户登录平台页面，但不得绕过验证码、风控或权限控制。
+
+安装环境：
+
+```bash
+cd /path/to/ip-proposal
+bash scripts/setup_env.sh
+```
+
+这个脚本会创建 `.venv`，安装 `Pillow`、`python-docx`、`requests`，并自测图片对比证据板生成脚本。它能解决“换 agent 后没有图片处理环境”的问题；但如果目标 agent 本身没有视觉模型或截图查看工具，skill 不能凭空赋予视觉理解能力。此时应生成对比证据板并在报告中标注 `视觉结论待人工/多模态复核`。
 
 也可以直接把下面这句设为别名：
 

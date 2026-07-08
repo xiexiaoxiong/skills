@@ -24,6 +24,7 @@ For every full assessment, read these files before drafting the final scheme:
 - `references/path-selection.md`: four-rights scoring matrix, statistics, and selection rules.
 - `references/jurisdiction-defendants.md`: court, defendant, and platform strategy.
 - `references/evidence-damages-defenses.md`: evidence modules, claim amount model, and defense responses.
+- `references/visual-evidence.md`: portable image-processing setup, visual contact sheet generation, and fallback rules for agents without image understanding.
 - `references/output-template.md`: human-readable report structure, DOCX delivery rules, and appendix layout.
 
 If the user asks only for a narrow sub-question, read only the relevant reference file(s).
@@ -58,13 +59,14 @@ Helpful optional inputs:
 12. State evidence gaps and the next facts needed to upgrade the claim amount.
 13. Do not promise litigation outcome.
 14. When generating a `.docx`, never pass raw objects, arrays, promises, or tool result dictionaries into `TextRun`, template strings, table cells, or markdown-to-docx converters. Normalize every table cell and paragraph to a human-readable string first; object values must be expanded into named fields or summarized.
+15. Do not skip visual comparison because the current agent lacks image-viewing ability. If images matter, use `references/visual-evidence.md` and `scripts/make_visual_contact_sheet.py` to create a comparison board; if no multimodal inspection is available, include the board and mark the visual conclusion as `待人工/多模态复核`.
 
 ## Working Method
 
 1. Extract seed signals: right holder, brand, product category, infringement URL, item ID, title/search query, shop/account, suspected infringers, addresses, labels, packaging, price, sales/reviews, dates, and platform parameters.
 2. Run a first-pass rights inventory using `rights-search-methods.md`: right holder marks/patents/copyrights and accused-party own marks/patents/copyrights.
 3. Follow the access priority ladder in `access-priority.md` to obtain the live page or determine the next lawful access step.
-4. For product cases, collect plaintiff and accused product images and make a packaging/appearance comparison before route scoring.
+4. For product cases, collect plaintiff and accused product images, create a visual contact sheet with `scripts/make_visual_contact_sheet.py` when images are available, and make a packaging/appearance comparison before route scoring. If the runtime lacks the image environment, run `scripts/setup_env.sh`; if setup is blocked, document the limitation and require user-assisted screenshots or manual review.
 5. Build and execute a search matrix using `search-investigation.md`: whole-web queries, platform-specific searches, right/status searches, company-chain searches, sales/scale searches, litigation/complaint searches, and jurisdiction searches.
 6. Classify search results as `已核验事实`, `强推定事实`, or `待核验事实`, and identify which results change the route, defendants, court, or amount.
 7. Map rights: trademark, trade dress/unfair competition, patents, copyright/software/game/content, and any combined route.
@@ -119,6 +121,7 @@ Before finalizing a case assessment, confirm the output includes:
 - Rights inventory for the right holder and accused side: trademarks, patents/designs, copyright/source materials, source URLs, and fact level.
 - Access attempts, blocked points, and whether browser/login/App notarization is needed.
 - Evidence collection plan by proof point.
+- Visual comparison board path or a clear reason why image evidence could not be generated/inspected.
 - Expected defendant defenses and counter-evidence.
 - Public-source or evidence basis for important factual claims.
 - Immediate action list.

@@ -20,6 +20,7 @@ Use four fact levels:
 3. Preserve the infringement:
    - Product/content page, item ID, store/account, title, images, details, brand field, price, sales/reviews/downloads/plays, timestamps.
    - For physical goods, always capture and compare the plaintiff product image and the accused product image before route selection. Record visual features: container shape, color system, layout grid, logo position, typography, product-name placement, icons/seals, claims, model/scene imagery, and overall impression.
+   - When images are available, generate a side-by-side visual contact sheet using `scripts/make_visual_contact_sheet.py`. If the agent lacks image-viewing ability, include the contact sheet in the report and mark the visual conclusion as requiring manual or multimodal review.
    - If public browser cannot access dynamic platform details, follow `access-priority.md` before requiring App/miniprogram notarization.
 4. Identify actors:
    - Seller, producer, brand operator, uploader, account operator, software user, platform operator, payee, invoice issuer, logistics sender, shareholder/actual controller.

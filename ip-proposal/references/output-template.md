@@ -15,6 +15,7 @@ DOCX requirements:
 - Use appendices for access logs, full search matrix, rights inventory details, evidence checklist, and source list.
 - Classify facts as `已核验事实`, `强推定事实`, `待核验事实`, or `法律判断`.
 - If visual product comparison is important, include side-by-side images when available; if images cannot be captured, include a feature-by-feature comparison table and state the gap.
+- If plaintiff/accused images are available, generate a visual contact sheet with `scripts/make_visual_contact_sheet.py` and include the image in the DOCX. If the agent cannot visually inspect it, state `视觉结论待人工/多模态复核` rather than pretending to have inspected it.
 - If the document toolchain is available, render the `.docx` to page images and visually inspect before delivery.
 - Before delivery, run `scripts/check_docx_formal_errors.py {report.docx}`. The report must have zero hits for object-stringification or placeholder tokens such as `[object Object]`, `[object Promise]`, `[object Array]`, `undefined`, `null`, or `NaN`. If any hit appears, inspect the source field, expand the object into readable text, regenerate the DOCX, and scan again.
 

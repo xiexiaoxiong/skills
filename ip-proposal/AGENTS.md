@@ -41,7 +41,7 @@ If the user gives only `权利人 + 侵权链接`, proceed. Extract all availabl
 1. Search the right holder's trademarks, patents, copyright assets, and packaging/trade dress or expression basis.
 2. Search the accused side's trademarks, patents, copyright assets, and operating entities.
 3. Access or preserve the accused page using the access ladder.
-4. Compare packaging / product appearance / expressive content when relevant.
+4. Compare packaging / product appearance / expressive content when relevant. If images matter, use `references/visual-evidence.md` and generate a side-by-side contact sheet with `scripts/make_visual_contact_sheet.py`.
 5. Score trademark, unfair competition, patent, and copyright paths.
 6. Choose one primary path and backup paths.
 7. Build jurisdiction, defendant, damages, evidence, and defense strategy.
@@ -58,7 +58,8 @@ GitHub 地址：https://github.com/xiexiaoxiong/skills/tree/main/ip-proposal
 请你自行完成安装：
 1. 如果你支持 Codex/OpenAI 风格的 skill，请把该目录安装为 ip-proposal，并确保我可以用 $ip-proposal 调用；
 2. 如果你不支持这种 skill 机制，请把 SKILL.md 和 references/ 作为你的提示词包/知识包，并配置 $ip-proposal 别名；
-3. 安装后告诉我具体调用方式，并用一句话确认你会在完整评估时生成 DOCX 诉讼方案报告。
+3. 安装后运行 bash scripts/setup_env.sh，安装图片处理和 DOCX 生成依赖；
+4. 安装后告诉我具体调用方式，并用一句话确认你会在完整评估时生成 DOCX 诉讼方案报告。
 ```
 
 Manual fallback:
@@ -67,7 +68,12 @@ Manual fallback:
 2. Configure `$ip-proposal` as an alias for reading `SKILL.md` and following the required references.
 3. Grant browser/search access for live links and public rights/company/court sources.
 4. Grant local file output access for `.docx` reports.
-5. Require the agent to record blocked pages and ask for lawful login/notarization support instead of bypassing CAPTCHA or platform risk controls.
+5. Run `bash scripts/setup_env.sh` from the skill folder when the agent can install packages. This creates `.venv` and installs the portable image/DOCX helper dependencies.
+6. Require the agent to record blocked pages and ask for lawful login/notarization support instead of bypassing CAPTCHA or platform risk controls.
+
+## Visual Capability Fallback
+
+The skill includes image-processing scripts, but it cannot give a non-visual model true image understanding. If the target agent has a vision tool, inspect the generated contact sheet. If not, generate the sheet, embed it into the report, and mark the visual conclusion as `待人工/多模态复核`.
 
 ## Final Response
 

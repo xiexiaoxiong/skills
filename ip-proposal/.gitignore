@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+*.pyc
+visual-contact-sheet.png
+visual-contact-sheet.json
