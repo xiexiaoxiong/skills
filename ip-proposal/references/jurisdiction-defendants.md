@@ -9,11 +9,16 @@ Analyze courts in this order:
 2. Infringing act place:
    - Manufacturing, warehousing, shipment, sale, upload, server operation, project use, store operation, platform operation.
 3. Infringing result place:
-   - Notarized purchase receiving place, plaintiff impact place, software use place, content access place. Treat network result-place jurisdiction cautiously and verify local practice.
+   - Use only when there is a legally recognized result-place connector for the specific IP cause of action, and verify current court practice.
+   - Do not treat the buyer's receiving place, notarized purchase receiving place, plaintiff-arranged delivery address, order place, or payment place as an independent jurisdiction basis for IP infringement or unfair competition claims. These facts may prove online sale, transaction completion, physical product source, or evidence-preservation chain, but they do not by themselves establish jurisdiction.
 4. Platform connection:
    - Platform operator domicile if platform is a defendant or its conduct is a jurisdiction connector; otherwise usually use platform for evidence production, not as a defendant.
 5. Centralized IP jurisdiction and level:
    - Verify current local rules, court level, amount threshold, specialized IP court/tribunal, patent technical case rules.
+
+## Non-Negotiable Jurisdiction Rule
+
+Never recommend a court solely because the plaintiff or investigator arranged delivery to that court's territory. For e-commerce IP cases, notarized purchase and delivery are evidence tools, not a jurisdiction shortcut. If no defendant domicile, infringing act place, platform-defendant connector, or other recognized jurisdiction connector is available, mark the court option as `不建议/高管辖异议风险` and continue investigating the seller, producer, invoice issuer, logistics sender, platform operator, and shop certification subject.
 
 ## Candidate Court Output
 
@@ -25,6 +30,7 @@ For each candidate court, state:
 - Advantages.
 - Jurisdiction objection risk.
 - Missing jurisdiction evidence.
+- Whether any proposed connection improperly relies on receiving place / purchase place / payment place; if yes, reject that connection or label it high risk.
 
 ## Defendant Selection
 

@@ -54,8 +54,9 @@ Helpful optional inputs:
 8. Do not assume trademark is always primary. If the target uses its own brand but copies packaging/trade dress, unfair competition may be primary.
 9. Do not assume patent is primary merely because a product looks similar. Require a valid patent and infringement comparison.
 10. Do not assume copyright is high-value for a single image or article. Require commercial scale, license price, bulk copying, software, audiovisual, or platform-scale evidence.
-11. State evidence gaps and the next facts needed to upgrade the claim amount.
-12. Do not promise litigation outcome.
+11. Do not use receiving place, purchase place, payment place, or plaintiff-arranged notarized delivery place as an independent jurisdiction basis. Treat purchase/delivery as evidence preservation, not a jurisdiction shortcut.
+12. State evidence gaps and the next facts needed to upgrade the claim amount.
+13. Do not promise litigation outcome.
 
 ## Working Method
 
@@ -110,6 +111,7 @@ Before finalizing a case assessment, confirm the output includes:
 - A `.docx` report for full assessments unless the user requested plain text only.
 - Best rights basis and backup paths.
 - Candidate jurisdiction courts with connection facts and risks.
+- Confirmation that the jurisdiction recommendation does not rely solely on receiving place, purchase place, payment place, or plaintiff-arranged delivery place.
 - Defendant structure and why each defendant is included or excluded.
 - Proposed claim amount/range with formula.
 - Search matrix and current sales/scale findings.

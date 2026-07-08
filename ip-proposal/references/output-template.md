@@ -119,6 +119,7 @@ Include:
 - Candidate court A and B.
 - Connection facts.
 - Jurisdiction objection risk.
+- A clear statement that receiving place, purchase place, payment place, or plaintiff-arranged notarized delivery place is not being used as an independent jurisdiction basis.
 - Why platform is or is not a defendant.
 - Whether shareholder, controller, manufacturer, seller, invoice issuer, logistics sender, or brand operator should be included.
 
