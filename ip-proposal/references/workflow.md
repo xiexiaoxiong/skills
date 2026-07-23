@@ -21,7 +21,9 @@ Use four fact levels:
    - Product/content page, item ID, store/account, title, images, details, brand field, price, sales/reviews/downloads/plays, timestamps.
    - For physical goods, always capture and compare the plaintiff product image and the accused product image before route selection. Record visual features: container shape, color system, layout grid, logo position, typography, product-name placement, icons/seals, claims, model/scene imagery, and overall impression.
    - When images are available, generate a side-by-side visual contact sheet using `scripts/make_visual_contact_sheet.py`. If the agent lacks image-viewing ability, include the contact sheet in the report and mark the visual conclusion as requiring manual or multimodal review.
-   - If public browser cannot access dynamic platform details, follow `access-priority.md` before requiring App/miniprogram notarization.
+   - If public access cannot reach dynamic platform details, follow `access-priority.md` and `interactive-login-handoff.md` before requiring App/miniprogram notarization.
+   - Only describe color, typography, container shape, layout, decorations, and overall visual impression from images/pages that were actually opened and inspected. Product names, snippets, influencer copy, and search-result text are textual clues, not visual evidence.
+   - If any qualifying visible interactive surface reaches login/security verification, perform the login handoff and pause. If no native/OpenClaw browser, Computer Use, headed persistent Playwright, or equivalent surface is available, pause for another surface, screenshots, or App evidence. A full packaging assessment cannot pass this gate on search snippets alone.
 4. Identify actors:
    - Seller, producer, brand operator, uploader, account operator, software user, platform operator, payee, invoice issuer, logistics sender, shareholder/actual controller.
 5. Identify money:
@@ -48,7 +50,8 @@ Use four fact levels:
 ## Do Not Skip
 
 - Link-level evidence and subject-level evidence must be connected. A beautiful infringement screenshot is weak if it does not prove who sold, produced, shipped, invoiced, or collected money.
-- Do not stop at "page blocked" if browser rendering, user-assisted login, or App-side notarization is a practical next step. If the page reaches a normal platform login/risk-control screen, first ask the user to complete login or verification in the visible browser/App, then continue the assessment.
+- Do not stop at "page blocked" if visible interactive access, user-assisted login, or App-side notarization is a practical next step. If the page reaches a normal platform login/risk-control screen, first open/focus a persistent user-operable surface, ask the user to complete login or verification there, wait, and then reinspect the same session.
+- Do not merely write that login is needed and then continue. Wait for the user response. If the user expressly chooses a preliminary clue-only report, label it prominently and leave packaging similarity and any visually dependent route score undecided.
 - Damages evidence must be its own package, not an appendix to infringement evidence.
 - Sales and scale must be actively investigated, not inferred only from the user's stated infringing link.
 - Backup route evidence must be listed even if not the primary route.

@@ -16,6 +16,7 @@ Use this reference at the start of every real target assessment. The goal is to 
    - Accused brand ownership, filing dates, classes, validity, and bad-faith filing clues.
 4. Collect plaintiff and accused product/packaging images and compare visual features before route scoring.
 5. Classify every result as `已核验`, `强推定`, or `待核验`; do not treat third-party databases as final proof when an official certificate or registry extract is needed.
+6. When Qichacha MCP/CLI is configured, use `qcc-investigation.md` to anchor the owner entity and query current trademark, patent, and copyright records before general search-engine fallbacks. Do not use Aiqicha.
 
 ## 2. Trademark Search
 

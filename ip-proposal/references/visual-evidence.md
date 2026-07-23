@@ -8,6 +8,7 @@ Use this reference when packaging, product appearance, page screenshots, artwork
 - The skill cannot make a non-multimodal agent visually understand images by itself.
 - If the agent has a visual inspection tool, use it on the generated comparison sheet.
 - If the agent lacks visual inspection, generate the comparison sheet, include it in the report, and mark the visual conclusion as `待人工/多模态复核`.
+- If accused-product images were never obtained, a contact sheet cannot be generated and the packaging similarity question remains unresolved. Text descriptions or search snippets cannot replace the missing image.
 
 ## 2. Environment Setup
 
@@ -19,7 +20,7 @@ bash scripts/setup_env.sh
 
 This creates `ip-proposal/.venv`, installs `requirements.txt`, and self-tests the visual contact sheet script.
 
-If network or package installation is blocked, continue the legal assessment but state that image handling is degraded. Ask the user or target agent to provide screenshots/contact sheets generated elsewhere.
+If network or package installation is blocked, ask the user or target agent to provide screenshots/contact sheets generated elsewhere. Non-visual issues may still be investigated, but do not score or decide a packaging/trade-dress route until the images are inspectable. Only produce a preliminary clue-only report if the user expressly requests it after being told about the gap.
 
 ## 3. Visual Evidence Board
 
@@ -52,3 +53,16 @@ Record these features even if the agent can inspect images:
 | Overall impression | whether ordinary consumers would remember the same visual source |
 
 Do not decide the litigation route from text search alone when product packaging is the user’s concern.
+
+## 5. Minimum Provenance Record
+
+For every plaintiff/accused image used in the report, record:
+
+- side (`权利人` / `被诉方`), product and SKU;
+- source URL, user-provided filename, or notarization package identifier;
+- capture/access date;
+- whether the page was viewed before or after login;
+- screenshot or local evidence path;
+- who/what inspected the image.
+
+If these fields are unavailable, downgrade the image to a clue and state exactly what still needs to be captured.

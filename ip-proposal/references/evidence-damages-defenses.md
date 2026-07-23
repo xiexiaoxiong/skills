@@ -38,15 +38,32 @@
 
 Use this sequence:
 
-1. Determine the primary calculable basis:
+1. Normalize every observed number before calculating:
+   - classify it as sold units/orders, visible price, reviews/comments, followers, stock, store-wide total, backend GMV, or another metric;
+   - state the time point/range and evidence source;
+   - exclude reviews, comments, followers, and non-attributable store-wide totals from accused-product sales.
+2. Calculate the public-data lower bound whenever reliable units and prices exist:
+   - `visible units × lowest reliable price = low visible GMV`;
+   - `visible units × highest reliable price = high visible GMV`;
+   - if price mix, refunds, or time range is unknown, call this an envelope, not actual revenue.
+3. Calculate profit sensitivity:
+   - apply low/base/high supported profit rates, normally three stated assumptions;
+   - or use a supported unit cost, but label wholesale/search clues as unverified until the source listing is preserved;
+   - show every numeric result.
+4. Determine the primary calculable basis:
    - Trademark: sales amount x profit rate, license fee, statutory/punitive fallback.
    - Unfair competition: transaction/traffic/project/secret value x profit or saved cost.
    - Patent: accused product sales x profit x patent contribution, or license fee/project amount.
    - Copyright: license fee x quantity/burden factor, dissemination revenue, software license price x installations.
-2. Separate reasonable expenses:
+5. Separate reasonable expenses:
    - Notarization, purchase, appraisal, attorney fee, investigation, preservation, travel, translation.
-3. Add punitive damages only where facts support willfulness and serious circumstances; do not include reasonable expenses in punitive base.
-4. Calibrate with empirical median award/claim ratios:
+6. State four concrete outputs:
+   - recommended economic-damages claim;
+   - reasonable-expense claim;
+   - total prayer;
+   - target award/range.
+7. Add punitive damages only where facts support willfulness and serious circumstances; do not include reasonable expenses in punitive base.
+8. Calibrate with empirical median award/claim ratios:
    - Trademark 60%.
    - Unfair competition 50%.
    - Patent 64.06%.
@@ -56,7 +73,7 @@ Formula:
 
 `recommended claim = max(calculable model, target award / empirical ratio)`
 
-If evidence is weak, output a claim range and list the evidence needed before filing.
+If evidence is weak, output a claim range and list the evidence needed before filing. Do not replace available case-specific arithmetic with a generic statutory-damages paragraph.
 
 ## Sales And Scale Investigation For Damages
 

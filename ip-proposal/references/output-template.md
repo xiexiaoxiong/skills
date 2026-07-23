@@ -12,7 +12,8 @@ DOCX requirements:
 - Use a formal business report style: clear headings, concise paragraphs, a few high-value tables, and appendices for dense investigation records.
 - Put the recommendation, obstacles, and immediate actions on page 1.
 - Keep the main text readable for clients and partners. Do not overload the body with every search attempt.
-- Use appendices for access logs, full search matrix, rights inventory details, evidence checklist, and source list.
+- Use appendices for the full search matrix, rights inventory details, sales worksheet, evidence checklist, and source list.
+- Do not add a standalone `取证访问记录` section or access-log appendix by default. Keep access diagnostics in working notes/evidence artifacts; mention a limitation only where it qualifies a material finding.
 - Classify facts as `已核验事实`, `强推定事实`, `待核验事实`, or `法律判断`.
 - If visual product comparison is important, include side-by-side images when available; if images cannot be captured, include a feature-by-feature comparison table and state the gap.
 - If plaintiff/accused images are available, generate a visual contact sheet with `scripts/make_visual_contact_sheet.py` and include the image in the DOCX. If the agent cannot visually inspect it, state `视觉结论待人工/多模态复核` rather than pretending to have inspected it.
@@ -43,6 +44,7 @@ Include:
 - Suspected infringer(s).
 - Report date.
 - Status note, e.g. `初步公开检索版，待公证/官方权利核验/平台后台数据补强`.
+- If login/image access was unresolved, use `初步线索版（用户已明确选择暂不登录/暂不提供图片）`; do not label it a completed assessment. Record the user's decision date. Without that express decision, pause instead of generating the DOCX.
 
 ### Executive Summary
 
@@ -99,6 +101,8 @@ Write a short visual conclusion first, then use a table:
 
 If the accused uses its own mark but preserves the plaintiff's distinctive visual system, state whether unfair competition should overtake trademark as the primary path.
 
+Evidence gate: the visual conclusion must name the screenshot/contact-sheet/evidence item actually inspected. If accused-product images were not obtained, write `视觉近似尚不能判断` and do not populate similarity findings from titles, snippets, creator copy, or product descriptions.
+
 ### Route Selection
 
 Provide a short comparative analysis of trademark, unfair competition, patent, and copyright.
@@ -136,16 +140,30 @@ Use short tables only where comparison helps.
 
 ### Damages And Claim Amount
 
-Do not output a naked number. Use a model:
+Do not output a naked or generic number. If any reliable quantity or price exists, show case-specific arithmetic.
 
-- Target award.
-- Recommended claim amount / range.
-- Primary model: sales, profit, license, contract, contribution, or statutory/discretionary basis.
-- Backup model.
-- Reasonable expenses.
-- Punitive damages feasibility.
-- Evidence needed to upgrade the amount.
-- Whether the amount is aggressive, moderate, or conservative.
+Required outputs:
+
+1. `已见数据下限`:
+   - identify every usable unit count and price;
+   - show `quantity × low price` and `quantity × high price` as a visible-GMV envelope;
+   - explain whether the quantity is sold units, orders, reviews, comments, followers, stock, or store-wide total;
+   - exclude non-attributable values from the primary calculation.
+2. `利润敏感性`:
+   - show low/base/high profit assumptions or a supported unit-cost model;
+   - provide the resulting numeric profit range.
+3. `诉请与目标判赔`:
+   - recommended economic-damages claim;
+   - reasonable-expense claim;
+   - total prayer;
+   - target award/range;
+   - whether the position is conservative, moderate, or aggressive.
+4. `备位模型与升级触发`:
+   - statutory/discretionary basis;
+   - punitive-damages feasibility and why;
+   - exact backend sales/GMV, multi-store, bad-faith, or reputation thresholds that would change the amount.
+
+When figures are uncertain, write a transparent range instead of choosing a hidden midpoint. Reviews, comments, followers, and store-wide totals must not be silently converted into accused-product sales.
 
 ### Evidence Plan
 
@@ -184,34 +202,28 @@ Use time blocks:
 
 State which official searches were completed, blocked, or require manual/browser verification.
 
-### Appendix B: Access Log
-
-| Step | Result | What it proved | Next action |
-|---|---|---|---|
-| URL parse |  |  |  |
-| Direct open / curl |  |  |  |
-| Exact search |  |  |  |
-| Platform variant / endpoint |  |  |  |
-| Browser / login |  |  |  |
-| App / notarization |  |  |  |
-
-If browser/login access succeeds, record visible fields: title, shop, brand field, producer, price, sales, reviews, SKU, images, and screenshots. If it fails, state the exact user action needed.
-
-### Appendix C: Search Matrix
+### Appendix B: Search Matrix
 
 | Target | Query / channel | Result | Fact level | Impact | Next step |
 |---|---|---|---|---|---|
 
 Include blocked searches, especially login-only platform pages, App-only pages, hidden sales, and official registries requiring manual verification.
 
-### Appendix D: Sales / Scale Worksheet
+### Appendix C: Sales / Scale Worksheet
 
 | Channel / link | Store / subject | Product / SKU | Visible price | Visible sales / reviews | Evidence strength | GMV / profit inference |
 |---|---|---|---:|---:|---|---|
 
 Explain deduplication, price assumptions, profit assumptions, and backend data requests.
 
-### Appendix E: Evidence Checklist
+The worksheet must contain the same arithmetic used in the body:
+
+- low-price and high-price visible-GMV calculations;
+- low/base/high profit sensitivity;
+- values excluded from attribution and the reason;
+- proposed economic-damages claim, reasonable expenses, total prayer, and upgrade triggers.
+
+### Appendix D: Evidence Checklist
 
 | Proof point | Current evidence | Needed evidence | Acquisition method | Priority |
 |---|---|---|---|---|
@@ -222,7 +234,7 @@ Explain deduplication, price assumptions, profit assumptions, and backend data r
 | Bad faith |  |  |  | Medium |
 | Reasonable expenses |  |  |  | Medium |
 
-### Appendix F: Sources And Basis
+### Appendix E: Sources And Basis
 
 List:
 
@@ -230,3 +242,15 @@ List:
 - User-provided screenshots, documents, product images, or login-assisted observations.
 - Official registry searches completed or blocked.
 - Statistical or guide basis used for route scoring and award calibration.
+
+Appendix E must not be empty. Important online factual claims must have an access date and a clickable source URL or a precisely identified user-provided/notarized evidence item.
+
+## 4. Evidence And Completeness Release Gate
+
+Before delivery:
+
+1. Run `scripts/check_docx_formal_errors.py {report.docx}`.
+2. Run `scripts/check_report_evidence_gates.py {report.docx}`. If login access mattered, add `--working-notes {internal-record.md}` so the gate can audit the handoff without adding an access-log section to the report.
+3. Fix every failure. Do not waive a failure by adding a generic disclaimer.
+4. Confirm the executive-summary fields, evidence plan, immediate-action list, route rationale, change-trigger facts, case-specific damages arithmetic, and Appendix E contain substantive content.
+5. For product/packaging cases, confirm the DOCX contains the inspected screenshot/contact sheet. If it does not, the report must be an expressly authorized preliminary clue-only report and must not contain a decisive visual-similarity conclusion or visually dependent route score.

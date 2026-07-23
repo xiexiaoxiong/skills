@@ -11,9 +11,10 @@
 - 查询权利人侧的商标、专利、著作权、包装装潢或作品权属线索；
 - 查询被诉方侧是否有自己的商标、专利、著作权或经营主体；
 - 访问侵权链接，记录商品标题、店铺、SKU、价格、销量、评论、图片、详情页等线索；
+- 优先调用小红书、微博、Chrome DevTools、Playwright和企查查MCP；不把Google或需要充值的AgentKey作为单点依赖；
 - 对比原告产品和被告产品的包装、外观、页面素材或作品表达；
 - 比较商标、不正当竞争、专利、著作权四条路径的胜诉稳定性和高判赔潜力；
-- 设计被告结构、管辖法院、证据方案、赔偿模型和抗辩应对；
+- 设计被告结构、管辖法院、证据方案、赔偿模型和抗辩应对；发现数量和价格时直接计算成交额、利润敏感性、诉请、目标判赔及升级阈值；
 - 输出一份人类友好的 `.docx` 报告，而不是只在聊天框里堆检索过程。
 
 ## 最小输入
@@ -60,8 +61,9 @@ GitHub 地址：https://github.com/xiexiaoxiong/skills/tree/main/ip-proposal
 请你自行完成安装：
 1. 如果你支持 Codex/OpenAI 风格的 skill，请把该目录安装为 ip-proposal，并确保我可以用 $ip-proposal 调用；
 2. 如果你不支持这种 skill 机制，请把 SKILL.md 和 references/ 作为你的提示词包/知识包，并配置 $ip-proposal 别名；
-3. 安装后进入 ip-proposal 目录运行 bash scripts/setup_env.sh，安装图片处理和 DOCX 生成依赖；
-4. 安装后告诉我具体调用方式，并用一句话确认你会在完整评估时生成 DOCX 诉讼方案报告。
+3. 安装后进入 ip-proposal 目录运行 bash scripts/setup_env.sh；需要跨agent可见登录时再运行 bash scripts/setup_headed_playwright.sh；
+4. 优先配置小红书、微博、Chrome DevTools、Playwright和企查查MCP；AgentKey仅作可选补充；
+5. 安装后告诉我具体调用方式，并确认完整评估会生成DOCX、量化赔偿且不默认输出访问日志。
 ```
 
 如果你是手动给 Codex 安装，也可以用下面的方式。
@@ -111,6 +113,8 @@ Codex 会通过 `SKILL.md` 的 frontmatter 自动识别该 skill。正式 skill 
    - 本地文件读写；
    - `.docx` 生成能力；
    - 必要时允许用户登录平台页面，但不得绕过验证码、风控或权限控制。
+   - 小红书、微博、Chrome DevTools、Playwright和企查查MCP（可用哪个就探测哪个）；
+   - 独立、可见、持久的浏览器任务profile，使用户登录后同一agent或其他agent能够续接；
 
 安装环境：
 
@@ -142,12 +146,18 @@ $ip-proposal = 读取 ip-proposal/SKILL.md 和 Required References，调查权�
 - 证据清单、取证步骤和抗辩应对；
 - 立即行动清单和来源记录。
 
+登录和页面访问的重试过程默认保存在工作记录/证据目录，不在客户报告中另设“取证访问记录”章节。只有用户明确要求，或访问限制会实质影响结论时，报告才说明必要限制。
+
+只要取到可靠数量和价格，赔偿部分必须展示公式和数字，至少包括公开成交额包络、低/中/高利润敏感性、经济损失诉请、合理开支、总诉请、目标判赔及证据升级阈值；评价数、粉丝数和店铺总售不得冒充涉案销量。
+
 最终聊天回复应尽量简短，只交付报告路径或下载链接。实质分析放在 Word 报告里。
 
 交付前必须做一次形式错误扫描：
 
 ```bash
 python3 ip-proposal/scripts/check_docx_formal_errors.py /path/to/report.docx
+python3 ip-proposal/scripts/check_report_evidence_gates.py /path/to/report.docx \
+  --working-notes /path/to/internal-access-record.md
 ```
 
 扫描结果必须是 `formal error scan passed: 0 hits`。如果出现 `[object Object]`、`undefined`、`null`、`NaN` 等内容，说明生成报告时把对象、数组、空值或工具结果直接写进了 Word，需要先修正字段展开逻辑，再重新生成报告。

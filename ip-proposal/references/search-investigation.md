@@ -2,7 +2,7 @@
 
 Use this reference before selecting the litigation route. The purpose is to turn sparse clues into a fact record: what exists online, what sales scale can be inferred, who controls the chain, and which right basis has the best damages upside.
 
-For blocked live pages, first follow `access-priority.md`. Search results are useful, but they do not replace a successful page view, browser screenshot, App notarization, or platform backend data.
+For blocked live pages, first follow `access-priority.md`, `interactive-login-handoff.md`, and `platform-mcp-investigation.md`. Search results are useful, but they do not replace a successful same-session page view and capture through a qualifying visible interactive surface, App notarization, or platform backend data.
 
 ## 1. Seed Signal Extraction
 
@@ -32,9 +32,19 @@ For a full assessment, search or propose searches in these buckets. Do not treat
 | Right holder reputation | official site, flagship stores, annual reports, media, awards, ads, product launch | `right holder + product + 上市`, `brand + 年报`, `brand + 销售额`, `brand + 广告` | influence/reputation, price/profit proxy |
 | IP rights | CNIPA trademark/patent, copyright registration, product design materials | `brand + 商标`, `product + 专利`, `packaging + 作品登记` | route eligibility and backup claims |
 | Accused-side rights | accused brand/company trademark, design patent, copyright/source claims | `accused brand + 商标`, `accused company + 专利`, `accused product + 外观设计` | defenses, bad-faith filing, invalidation needs |
-| Company chain | National Enterprise Credit Information Publicity System, official filings, labels, third-party clues | `company + 法定代表人`, `company + 地址`, `company + 商标`, `company + 店铺` | defendants, shareholders, jurisdiction, collectability |
+| Company chain | Qichacha MCP/CLI entity anchoring, National Enterprise Credit Information Publicity System, official filings, labels | `company + 法定代表人`, `company + 地址`, `company + 商标`, `company + 店铺` | defendants, shareholders, jurisdiction, collectability |
 | Prior conduct | judgments, administrative penalties, platform complaints, repeated listings | `company + 商标侵权`, `company + 不正当竞争`, `brand + 投诉`, `shop + 下架` | bad faith, punitive/酌定 factors |
 | Jurisdiction | defendant domicile, seller location, platform operator, centralized IP rules | `court + 知识产权 管辖`, `city + 知识产权案件 管辖` | court selection and objection risk |
+
+### Search-surface diversification
+
+- Prefer direct platform search and official databases for platform facts, rights status, companies, penalties, and court rules.
+- For company-chain investigation, apply `qcc-investigation.md`: use full registered names or unified social credit codes, stop on multiple candidates, and treat QCC results as structured third-party evidence pending official/litigation-proof confirmation. Do not use Aiqicha.
+- Use locally available browser/search surfaces in this order when one provider is unavailable: platform-native search; Baidu; Bing; Sogou/360; another permitted public engine. Google is optional, never mandatory.
+- Capability-probe Xiaohongshu MCP and Weibo MCP for their native platforms. For visible page work, prefer Chrome DevTools MCP, Playwright MCP, native browser/OpenClaw control, or Computer Use; use the bundled headed Playwright CDP adapter when no runtime browser surface qualifies.
+- AgentKey is optional low-priority enrichment. Do not require credits, do not ask the user to recharge for the standard workflow, and do not treat an AgentKey quota/auth failure as a negative search result.
+- Treat search-engine summaries, AI overviews, snippets, and image thumbnails only as leads. Open the underlying page or preserve the platform page before upgrading the fact level.
+- Record tool/surface, exact query, result URL, access date, and whether the underlying page was opened.
 
 ## 3. Platform-Specific Sales Investigation
 
@@ -47,7 +57,9 @@ Use platform-native access where possible. Public search snippets are only clues
 | JD | shop name, self-operated/third-party, comments, SKU, business license, invoice | comments and SKU history, invoice issuer |
 | Douyin/Kuaishou | product card, live/video sales, store, account followers, videos, shop qualification | live sales clips, follower scale, repeated campaigns |
 | 1688 | manufacturer storefront, MOQ, monthly transactions, factory identity | source manufacturing, production capacity, wholesale scale |
-| Xiaohongshu/WeChat/Baidu | promotion posts, consumer confusion, search results, official claims | confusion, publicity, traffic diversion |
+| Xiaohongshu | native MCP note/profile search, stable note ID/URL, author, date, engagement, images, promotion/consumer context | reputation, promotion, confusion clues, packaging images; engagement is not sales |
+| Weibo | native MCP content/user/topic search, stable status ID/URL, account, date, engagement, media | reputation, promotion, accused-product references, confusion clues; engagement is not sales |
+| WeChat/Baidu | promotion posts, consumer confusion, search results, official claims | confusion, publicity, traffic diversion |
 
 When platform pages hide sales or require login, state the limitation and require:
 
@@ -93,7 +105,7 @@ Use search results to update the route, not merely decorate the report.
 
 Every full assessment must include:
 
-- Access priority steps attempted when live pages were blocked.
+- A working-note/evidence record of access priority steps attempted when live pages were blocked; the client report includes only outcome-relevant limitations, not a standalone access log.
 - Rights inventory for both right holder and accused side, including official searches completed or blocked.
 - Search terms/targets actually used or that must be used next.
 - Sources found, access date, and fact level.
