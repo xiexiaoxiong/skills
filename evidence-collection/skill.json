@@ -1,0 +1,19 @@
+{
+  "name": "evidence-collection",
+  "title": "重案证据清单构建器",
+  "title_en": "Heavy Case Evidence Builder",
+  "version": "1.0.0",
+  "author": "OpenAI Agent",
+  "category": "知识产权",
+  "reg_no": 1,
+  "description": "按用户输入的权利人和疑似侵权链接，自动执行61项跨平台重案证据清单、商标/网络电商/工商监管证据调取、登录协作与截图留痕，并输出可执行的项目经理报表与证据目录。",
+  "description_en": "Builds a 61-item heavy-case evidence matrix from holder and suspect URL inputs, executing cross-platform evidence collection (e-commerce, trademark, business registry and regulatory checks), handling login coordination, and producing a manager-first evidence report with linked sources and evidence artifacts.",
+  "boundaries": "本 Skill 为案内检索与证据清单生成工具，不替代律师对证据能力、法律结论及文书适格性的最终判断；运行结果中的证据仅为线索需结合原始页面与诉讼法定固定流程复核。",
+  "boundaries_en": "This skill is for evidence collection and checklist generation only and does not replace counsel's legal evaluation or legal filing guidance; results are lead evidence that must be preserved and verified under evidentiary workflow.",
+  "license": "internal",
+  "review": {
+    "self_check": "2026-07-24",
+    "ai_scan": "2026-07-24",
+    "human_review": {}
+  }
+}

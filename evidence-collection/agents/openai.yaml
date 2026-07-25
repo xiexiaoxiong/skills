@@ -1,0 +1,7 @@
+interface:
+  display_name: "重案证据全量调查"
+  short_description: "先跑尽可执行调查，再输出表内小图和下一步重点"
+  default_prompt: "Use $evidence-collection. Treat the current 61-row user checklist as authoritative. Extract defendant seeds first, compile the run-first action queue, and keep calling real browser, QCC, search, and official-database tools until every READY action is terminal or explicitly parked for login/manual work. Never substitute plaintiff products for defendant investigation; only rows 2-3-1 through 2-3-5 may independently research plaintiff reputation. For Xiaohongshu and Weibo, use the read-only logical MCP tools `xiaohongshu` and `weibo` for discovery, then verify every candidate canonical page and capture the screenshot with `chrome-devtools`; use `playwright` only as fallback for a public page that requires no login. Never invoke AgentKey, an AgentKey skill, or an AgentKey-backed provider, and never substitute general web search for the platform MCP. If login is required, show the QR code in the current controlled Chrome session, let the user scan it without asking for any screenshot or credential, then verify and resume the same session. Only after the queue is quiescent, return the project-manager report with canonical-page hyperlinks and agent-captured thumbnails. Keep full logs and canonical output as audit artifacts."
+
+policy:
+  allow_implicit_invocation: true

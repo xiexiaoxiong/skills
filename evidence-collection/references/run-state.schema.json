@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/heavy-case-evidence-builder/run-state.schema.json",
+  "title": "重案证据调查运行状态",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "case_id",
+    "case_dir",
+    "run_dir",
+    "case_state",
+    "execution_state",
+    "result_status",
+    "wave_order",
+    "created_at",
+    "updated_at",
+    "last_sequence",
+    "counts",
+    "discovered_seeds"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "case_id": {"type": "string", "minLength": 1},
+    "case_dir": {"type": "string", "minLength": 1},
+    "run_dir": {"type": "string", "minLength": 1},
+    "case_state": {
+      "enum": ["CREATED", "SEEDING", "PLANNED", "RUNNING", "WAITING_LOGIN", "WAITING_MANUAL", "QUIESCENT", "RENDERED", "FAILED"]
+    },
+    "execution_state": {
+      "enum": ["PLANNED", "READY", "RUNNING", "WAITING_LOGIN", "WAITING_MANUAL", "QUIESCENT", "FAILED"]
+    },
+    "result_status": {
+      "type": ["string", "null"],
+      "enum": [null, "COMPLETE_VERIFIED", "PARTIAL_VERIFIED", "LEAD_ONLY", "NOT_FOUND", "NEEDS_HUMAN", "NOT_APPLICABLE", "CONFLICT", "ERROR"]
+    },
+    "wave_order": {
+      "type": "array",
+      "prefixItems": [
+        {"const": "W0"}, {"const": "W1"}, {"const": "W2"},
+        {"const": "W3"}, {"const": "W4"}, {"const": "W5"}
+      ],
+      "items": false
+    },
+    "active_action_id": {"type": ["string", "null"]},
+    "pause_reason": {"type": ["string", "null"]},
+    "created_at": {"type": "string", "minLength": 1},
+    "started_at": {"type": ["string", "null"]},
+    "updated_at": {"type": "string", "minLength": 1},
+    "quiesced_at": {"type": ["string", "null"]},
+    "last_sequence": {"type": "integer", "minimum": 0},
+    "counts": {
+      "type": "object",
+      "required": ["actions", "rows", "by_execution_state", "by_result_status", "by_wave"],
+      "properties": {
+        "actions": {"type": "integer", "minimum": 0},
+        "rows": {"const": 61},
+        "by_execution_state": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "by_result_status": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "by_wave": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}}
+      }
+    },
+    "discovered_seeds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "value", "source_ref"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "value": {"type": "string", "minLength": 1},
+          "source_ref": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/heavy-case-evidence-builder/row-result.schema.json",
+  "title": "五维证据清单行级调查结果",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "item_id",
+    "status",
+    "completed_at",
+    "actions",
+    "findings",
+    "sources",
+    "checked_platforms",
+    "limitations",
+    "next_steps"
+  ],
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "pattern": "^[1-5](?:-[0-9]+){1,2}[A-Z]?$"
+    },
+    "status": {
+      "enum": [
+        "COMPLETE_VERIFIED",
+        "PARTIAL_VERIFIED",
+        "LEAD_ONLY",
+        "NOT_FOUND",
+        "BLOCKED",
+        "NEEDS_HUMAN",
+        "NOT_APPLICABLE",
+        "CONFLICT",
+        "ERROR"
+      ]
+    },
+    "execution_state": {
+      "enum": [
+        "PLANNED",
+        "WAITING_DEPENDENCY",
+        "READY",
+        "RUNNING",
+        "WAITING_LOGIN",
+        "WAITING_MANUAL",
+        "RETRYABLE",
+        "TERMINAL"
+      ],
+      "description": "调查动作运行态，与证据结论status分离。"
+    },
+    "completed_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "accessed_at",
+          "outcome",
+          "seed_refs",
+          "subject_role"
+        ],
+        "properties": {
+          "platform": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "accessed_at": {
+            "type": "string",
+            "minLength": 1
+          },
+          "outcome": {
+            "enum": [
+              "FOUND",
+              "NOT_FOUND",
+              "BLOCKED",
+              "LOGIN_REQUIRED",
+              "MANUAL_REQUIRED",
+              "RETRYABLE",
+              "ERROR",
+              "NOT_RUN",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "executor": {
+            "enum": [
+              "BROWSER",
+              "QCC_MCP",
+              "WEB_SEARCH",
+              "OFFICIAL_DB",
+              "HTTP_CAPTURE",
+              "MANUAL"
+            ]
+          },
+          "execution_mode": {
+            "enum": ["ONLINE", "OFFLINE", "MANUAL"]
+          },
+          "action_run_id": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string"
+          },
+          "finished_at": {
+            "type": "string"
+          },
+          "raw_refs": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "screenshot_refs": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "note": {
+            "type": "string"
+          },
+          "subject_role": {
+            "type": "string",
+            "enum": [
+              "DEFENDANT",
+              "PLAINTIFF_REPUTATION",
+              "RIGHTS_BASIS",
+              "COMPARISON",
+              "NEUTRAL",
+              "MANUAL"
+            ],
+            "description": "本次动作的调查对象角色。PLAINTIFF_REPUTATION仅允许用于2-3-1至2-3-5；COMPARISON必须以前序DEFENDANT动作为基础。"
+          },
+          "seed_refs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "本次动作实际使用的种子引用；被告向任务应指向case.defendant_seed或被告侧证据，比较动作同时指向被告材料和固定比较材料。"
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "statement",
+          "source_refs"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "support_scope": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "accessed_at",
+          "source_grade"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "evidence_file": {
+            "type": "string"
+          },
+          "accessed_at": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_grade": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
+          },
+          "supports": {
+            "type": "string"
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "url"
+            ]
+          },
+          {
+            "required": [
+              "evidence_file"
+            ]
+          }
+        ]
+      }
+    },
+    "checked_platforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "checked",
+          "outcome"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "checked": {
+            "type": "boolean"
+          },
+          "outcome": {
+            "enum": [
+              "FOUND",
+              "NOT_FOUND",
+              "BLOCKED",
+              "NOT_RUN",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "searched_scope": {
+      "type": "object",
+      "required": ["provider", "platform", "query", "executed_at"],
+      "properties": {
+        "provider": {"type": "string", "minLength": 1},
+        "platform": {"type": "string", "minLength": 1},
+        "query": {"type": "string", "minLength": 1},
+        "executed_at": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": true
+    },
+    "blocked_reason": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "compact_result": {
+      "type": "string",
+      "maxLength": 240,
+      "description": "用户报告结果列使用的短结论，不含长URL、时间戳或动作日志。"
+    },
+    "next_step_focus": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["owner", "action"],
+        "properties": {
+          "owner": {"enum": ["AI", "律师", "测购", "客户", "公证", "法院"]},
+          "action": {"type": "string", "maxLength": 64},
+          "priority": {"enum": ["P0", "P1", "P2", "P3"]}
+        }
+      }
+    }
+  }
+}

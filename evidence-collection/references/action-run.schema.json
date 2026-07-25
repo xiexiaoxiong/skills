@@ -1,0 +1,114 @@
+{
+  "x-platform-verification-contract": {
+    "platforms": {
+      "小红书": "xiaohongshu",
+      "微博": "weibo"
+    },
+    "discovery_mode": "READ_ONLY",
+    "primary_verifier": "chrome-devtools",
+    "public_page_fallback": "playwright",
+    "forbidden_route": "AgentKey",
+    "canonical_url_and_agent_screenshot_required_for_found": true
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/heavy-case-evidence-builder/action-run.schema.json",
+  "title": "重案证据调查动作运行日志",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "run_id",
+    "case_id",
+    "sequence",
+    "event_type",
+    "action_id",
+    "row_id",
+    "attempt",
+    "recorded_at",
+    "execution_before",
+    "execution_after",
+    "outcome",
+    "result_status",
+    "action_spec"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "case_id": {"type": "string", "minLength": 1},
+    "sequence": {"type": "integer", "minimum": 1},
+    "event_type": {"enum": ["DISPATCH", "COMMIT", "PARK_MANUAL", "RESUME"]},
+    "commit_id": {"type": ["string", "null"]},
+    "action_id": {"type": "string", "minLength": 1},
+    "row_id": {"type": "string", "minLength": 1},
+    "attempt": {"type": "integer", "minimum": 0},
+    "recorded_at": {"type": "string", "minLength": 1},
+    "started_at": {"type": ["string", "null"]},
+    "finished_at": {"type": ["string", "null"]},
+    "execution_before": {"type": "string", "minLength": 1},
+    "execution_after": {"type": "string", "minLength": 1},
+    "outcome": {
+      "type": ["string", "null"],
+      "enum": [null, "FOUND", "NOT_FOUND", "LOGIN_REQUIRED", "MANUAL_REQUIRED", "NOT_APPLICABLE", "ERROR"]
+    },
+    "result_status": {
+      "type": ["string", "null"],
+      "enum": [null, "COMPLETE_VERIFIED", "PARTIAL_VERIFIED", "LEAD_ONLY", "NOT_FOUND", "NEEDS_HUMAN", "NOT_APPLICABLE", "CONFLICT", "ERROR"]
+    },
+    "action_spec": {
+      "type": "object",
+      "required": ["wave", "executor", "provider", "platform", "subject_role", "seed_refs", "objective", "login_policy"]
+    },
+    "tool_route": {"type": "string", "minLength": 1},
+    "canonical_url": {"type": "string", "format": "uri"},
+    "page_verified": {"type": "boolean"},
+    "page_verified_at": {"type": "string", "format": "date-time"},
+    "verification_tool": {"enum": ["chrome-devtools", "playwright"]},
+    "execution_trace": {
+      "type": "object",
+      "properties": {
+        "discovery": {
+          "type": "object",
+          "required": ["tool", "mode", "raw_ref"],
+          "properties": {
+            "tool": {"enum": ["xiaohongshu", "weibo"]},
+            "mode": {"const": "READ_ONLY"},
+            "raw_ref": {"type": "string", "minLength": 1}
+          },
+          "additionalProperties": true
+        },
+        "verification": {
+          "type": "object",
+          "required": ["tool", "canonical_url", "verified_at", "page_verified", "capture_actor", "screenshot_ref"],
+          "properties": {
+            "tool": {"enum": ["chrome-devtools", "playwright"]},
+            "canonical_url": {"type": "string", "format": "uri"},
+            "final_url": {"type": "string", "format": "uri"},
+            "verified_at": {"type": "string", "format": "date-time"},
+            "page_verified": {"const": true},
+            "capture_actor": {"const": "AGENT"},
+            "screenshot_ref": {"type": "string", "minLength": 1},
+            "public_page": {"type": "boolean"},
+            "login_state_used": {"type": "boolean"}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "findings": {"type": "array"},
+    "sources": {"type": "array"},
+    "raw_refs": {"type": "array", "items": {"type": "string"}},
+    "screenshot_refs": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "next_steps": {"type": "array", "items": {"type": "string"}},
+    "seed_updates": {"type": "array"},
+    "error": {
+      "type": ["object", "null"],
+      "properties": {
+        "code": {"type": "string"},
+        "message": {"type": "string"},
+        "retryable": {"type": "boolean"}
+      }
+    }
+  }
+}

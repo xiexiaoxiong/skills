@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/heavy-case-evidence-builder/evidence-attachments.schema.json",
+  "title": "Heavy-case evidence attachments",
+  "description": "Attachment metadata for the canonical 61-row compact inline evidence report.",
+  "type": "array",
+  "minItems": 61,
+  "maxItems": 61,
+  "items": {
+    "$ref": "#/$defs/row"
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "required": [
+        "row_id",
+        "images",
+        "source_urls"
+      ],
+      "properties": {
+        "row_id": {
+          "type": "string",
+          "pattern": "^[1-5]-[0-9]+(?:-[0-9]+)?$"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/image"
+          }
+        },
+        "source_urls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        },
+        "appendix_note": {
+          "type": "string",
+          "description": "Legacy compatibility only. The compact renderer must ignore this field."
+        }
+      },
+      "additionalProperties": true
+    },
+    "image": {
+      "type": "object",
+      "required": [
+        "path",
+        "role",
+        "label"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "thumbnail_path": {
+          "type": "string"
+        },
+        "display_priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "primary_row_id": {
+          "type": "string"
+        },
+        "duplicate_group_id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "url",
+        "role",
+        "label"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "role": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

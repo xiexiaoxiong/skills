@@ -1,0 +1,460 @@
+{
+  "x-authentication-contract": {
+    "method": "QR_SCAN_IN_CONTROLLED_BROWSER",
+    "user_screenshots_allowed": false,
+    "qr_image_upload_allowed": false,
+    "credentials_allowed": false,
+    "same_session_verification_required": true
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/schemas/login-event.schema.json",
+  "title": "Cross-host login coordination event",
+  "type": "object",
+  "required": [
+    "protocol",
+    "event",
+    "event_id",
+    "correlation_id",
+    "case_id",
+    "workflow_id",
+    "checkpoint",
+    "attempt",
+    "issued_at",
+    "expires_at",
+    "host_capabilities",
+    "session",
+    "payload"
+  ],
+  "properties": {
+    "protocol": {
+      "const": "agent-login-coordination/1.0"
+    },
+    "event": {
+      "enum": [
+        "LOGIN_REQUIRED",
+        "LOGIN_CONFIRMED",
+        "LOGIN_FAILED",
+        "RESUME"
+      ]
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "workflow_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "checkpoint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "host_capabilities": {
+      "$ref": "#/$defs/hostCapabilities"
+    },
+    "session": {
+      "$ref": "#/$defs/session"
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "LOGIN_REQUIRED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/loginRequiredPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "LOGIN_CONFIRMED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/loginConfirmedPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "LOGIN_FAILED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/loginFailedPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "RESUME"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/resumePayload"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "hostCapabilities": {
+      "type": "object",
+      "required": [
+        "ui_prompt",
+        "browser_control",
+        "session_persistence",
+        "async_resume"
+      ],
+      "properties": {
+        "ui_prompt": {
+          "type": "boolean"
+        },
+        "browser_control": {
+          "type": "boolean"
+        },
+        "session_persistence": {
+          "type": "boolean"
+        },
+        "async_resume": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "session": {
+      "type": "object",
+      "required": [
+        "session_ref",
+        "origin",
+        "target_url",
+        "lease_expires_at"
+      ],
+      "properties": {
+        "session_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "origin": {
+          "type": "string",
+          "format": "uri"
+        },
+        "target_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "lease_expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "presentation": {
+      "type": "object",
+      "required": [
+        "preferred",
+        "fallback",
+        "selected"
+      ],
+      "properties": {
+        "preferred": {
+          "const": "HOST_MODAL"
+        },
+        "fallback": {
+          "const": "PLAIN_TEXT"
+        },
+        "selected": {
+          "enum": [
+            "HOST_MODAL",
+            "PLAIN_TEXT"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "verification": {
+      "type": "object",
+      "required": [
+        "same_session_required",
+        "expected_url_patterns",
+        "required_signals"
+      ],
+      "properties": {
+        "same_session_required": {
+          "const": true
+        },
+        "expected_url_patterns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "maxItems": 20
+        },
+        "required_signals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "maxItems": 20
+        }
+      },
+      "additionalProperties": false
+    },
+    "retryPolicy": {
+      "type": "object",
+      "required": [
+        "timeout_seconds",
+        "max_attempts",
+        "current_attempt"
+      ],
+      "properties": {
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "max_attempts": {
+          "const": 3
+        },
+        "current_attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        }
+      },
+      "additionalProperties": false
+    },
+    "loginRequiredPayload": {
+      "type": "object",
+      "required": [
+        "provider",
+        "reason_code",
+        "allowed_methods",
+        "instruction",
+        "forbidden_user_materials",
+        "presentation",
+        "verification",
+        "retry_policy"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "allowed_methods": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "QR",
+              "OTP",
+              "MANUAL_SIGN_IN"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "forbidden_user_materials": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "SCREENSHOT",
+              "PASSWORD",
+              "OTP_VALUE",
+              "COOKIE",
+              "AUTHORIZATION_HEADER",
+              "QR_IMAGE",
+              "LOCAL_STORAGE",
+              "SESSION_STORAGE"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "presentation": {
+          "$ref": "#/$defs/presentation"
+        },
+        "verification": {
+          "$ref": "#/$defs/verification"
+        },
+        "retry_policy": {
+          "$ref": "#/$defs/retryPolicy"
+        }
+      },
+      "additionalProperties": false
+    },
+    "loginConfirmedPayload": {
+      "type": "object",
+      "required": [
+        "source",
+        "user_action_completed",
+        "authentication_verified",
+        "secret_received",
+        "next_action"
+      ],
+      "properties": {
+        "source": {
+          "enum": [
+            "USER_TEXT",
+            "HOST_MODAL",
+            "BROWSER_SIGNAL"
+          ]
+        },
+        "user_action_completed": {
+          "const": true
+        },
+        "authentication_verified": {
+          "const": false
+        },
+        "secret_received": {
+          "const": false
+        },
+        "next_action": {
+          "const": "VERIFY_SAME_SESSION"
+        }
+      },
+      "additionalProperties": false
+    },
+    "loginFailedPayload": {
+      "type": "object",
+      "required": [
+        "code",
+        "retryable",
+        "message",
+        "next_action"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "TIMEOUT",
+            "USER_CANCELLED",
+            "CHALLENGE_EXPIRED",
+            "VERIFICATION_FAILED",
+            "SESSION_LOST",
+            "HOST_NO_BROWSER",
+            "AUTH_DENIED",
+            "NETWORK_ERROR",
+            "MFA_UNSUPPORTED",
+            "MAX_ATTEMPTS_EXCEEDED"
+          ]
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "next_action": {
+          "enum": [
+            "RETRY_LOGIN",
+            "STOP"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "resumePayload": {
+      "type": "object",
+      "required": [
+        "session_verified",
+        "verification_signals",
+        "resume_ref",
+        "next_state"
+      ],
+      "properties": {
+        "session_verified": {
+          "const": true
+        },
+        "verification_signals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "resume_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "next_state": {
+          "const": "RUNNING"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

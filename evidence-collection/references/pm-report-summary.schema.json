@@ -1,0 +1,189 @@
+{
+  "x-canonical-link-contract": {
+    "platforms": ["小红书", "微博"],
+    "required_discovery_tools": ["xiaohongshu", "weibo"],
+    "allowed_verification_tools": ["chrome-devtools", "playwright"],
+    "playwright_public_page_only": true,
+    "required_for_checked_links": [
+      "canonical_url",
+      "page_verified",
+      "page_verified_at",
+      "verification_tool"
+    ],
+    "thumbnail_capture_actor": "AGENT",
+    "forbidden_route": "AgentKey"
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/heavy-case-evidence-builder/pm-report-summary.schema.json",
+  "title": "项目经理执行版重案证据报告摘要",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "case_id",
+    "run_id",
+    "generated_at",
+    "row_count",
+    "dashboard",
+    "rows"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pm-report-summary/1.0"
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "row_count": {
+      "const": 61
+    },
+    "dashboard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ai_checked_rows",
+        "manager_pending_rows",
+        "status_counts",
+        "line_actions_total",
+        "ai_completed_actions",
+        "pending_actions",
+        "seed_actions"
+      ],
+      "properties": {
+        "ai_checked_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "manager_pending_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "AI_CHECKED_FOUND",
+            "AI_CHECKED_NO_RESULT",
+            "NOT_CHECKED_LOGIN",
+            "NOT_CHECKED_MANUAL",
+            "RUN_FAILED_NEEDS_ACTION"
+          ],
+          "properties": {
+            "AI_CHECKED_FOUND": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "AI_CHECKED_NO_RESULT": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "NOT_CHECKED_LOGIN": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "NOT_CHECKED_MANUAL": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "RUN_FAILED_NEEDS_ACTION": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "line_actions_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ai_completed_actions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pending_actions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "seed_actions": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 61,
+      "maxItems": 61,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "row_id",
+          "priority",
+          "manager_status",
+          "status_label",
+          "objective",
+          "is_mixed_checked_and_unresolved",
+          "plain_summary",
+          "manager_action",
+          "save_items"
+        ],
+        "properties": {
+          "row_id": {
+            "type": "string",
+            "pattern": "^[1-5]-"
+          },
+          "priority": {
+            "type": "string",
+            "minLength": 1
+          },
+          "manager_status": {
+            "enum": [
+              "AI_CHECKED_FOUND",
+              "AI_CHECKED_NO_RESULT",
+              "NOT_CHECKED_LOGIN",
+              "NOT_CHECKED_MANUAL",
+              "RUN_FAILED_NEEDS_ACTION"
+            ]
+          },
+          "status_label": {
+            "enum": [
+              "已查看｜有线索",
+              "已查看｜未发现",
+              "待处理｜需登录",
+              "待处理｜需人工",
+              "待处理｜运行失败"
+            ]
+          },
+          "objective": {
+            "type": "string",
+            "minLength": 1
+          },
+          "is_mixed_checked_and_unresolved": {
+            "type": "boolean"
+          },
+          "plain_summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "manager_action": {
+            "type": "string",
+            "minLength": 1
+          },
+          "save_items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
