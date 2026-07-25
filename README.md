@@ -28,11 +28,14 @@
 2) 安装后确认我可以用下面口令调用：
 - $evidence-collection
 
-3) 然后按这个需求直接生成报告（可复用到知识产权案件）：
+3) 安装完成后请把依赖一起装上（必须）：
+- 在 skill 同目录执行：`python3 -m pip install -r evidence-collection/requirements.txt`
+
+4) 然后按这个需求直接生成报告（可复用到知识产权案件）：
 - 权利人：<填写权利人>
 - 被告侵权链接：<填写被侵权商品链接>
 
-4) 报告要求：
+5) 报告要求：
 - 结果只输出最终证据清单，不要让我手工再处理安装和环境。
 - 每一行要有可跳转页面链接。
 - 有截图复核的地方给出对应页面/截图定位。
@@ -73,6 +76,19 @@ python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r evidence-collection/requirements.txt
 ```
+
+如果你希望一步到位，也可以执行：
+
+```bash
+git clone https://github.com/xiexiaoxiong/skills.git
+cd /Users/<你用户名>/Documents/skills
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r evidence-collection/requirements.txt
+bash install/install.sh install evidence-collection
+```
+
+（若该仓库无 install 脚本，改为 `cp -R evidence-collection ~/.codex/skills/` 后再执行 `pip install`）
 
 如果你有统一部署脚本，也可改用 `cp` 方式安装：
 

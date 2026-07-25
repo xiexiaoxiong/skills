@@ -15,10 +15,13 @@
 1) 安装：
    - 到仓库安装链接：https://github.com/xiexiaoxiong/skills/tree/main/evidence-collection
    - 确认安装后我可以用 $evidence-collection 调用
-2) 代替我调用，参数如下：
+2) 安装完成后请立即一起执行依赖安装（与该 skill 同步）：
+   - pip install -r evidence-collection/requirements.txt
+   - 若环境未装 venv，请在 ~/.venv 或等价环境下执行
+3) 代替我调用，参数如下：
    - 权利人：<填写权利人>
    - 被告侵权链接：<填写侵权链接>
-3) 你需要输出一份“可直接交付”的证据清单报告：
+4) 你需要输出一份“可直接交付”的证据清单报告：
    - 每行都要有“可点击链接”
    - 有截图核验的项要给出截图位置/说明
    - 结尾给我一句“任务完成”
@@ -35,7 +38,8 @@
 3) 按以下参数执行证据清单输出：
    权利人：珂润
    被告侵权链接：https://item.jd.com/10220925150279.html
-4) 输出可复用报告，含可点击链接与截图核验项
+4) 依赖必须先装好：python3 -m pip install -r evidence-collection/requirements.txt（在对应 skill 环境）
+5) 输出可复用报告，含可点击链接与截图核验项
 ```
 
 ## 安装与依赖
@@ -48,6 +52,15 @@ bash install/install.sh install evidence-collection
 安装后一次性安装 Python 依赖：
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r evidence-collection/requirements.txt
+```
+
+可复制的一次性依赖命令（推荐）：
+
+```bash
+cd /Users/<你的用户名>/Documents/skills
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r evidence-collection/requirements.txt
@@ -71,6 +84,12 @@ cp -R evidence-collection ~/.codex/skills/
 权利人：珂润
 侵权链接：https://item.jd.com/10220925150279.html
 ```
+
+当前 Python 依赖：
+
+- `python-docx>=1.1.2`
+- `lxml>=4.9.0`
+- `Pillow>=10.2.0`
 
 ```text
 请按“平台 MCP 检索 → Chrome/Playwright 截图复核 → 表格超链接”方式输出报告。
