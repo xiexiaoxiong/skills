@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-"""从已登录的新浪邮箱网页会话抓取发票（仅 PDF/图片），并生成清单与四拼一汇总。
+"""从任意已登录邮箱的网页会话抓取发票（仅 PDF/图片），并生成清单与四拼一汇总。
 
 用法：
-  python3 fetch_invoices.py open-login [--profile-dir DIR] [--port 9222]
-  python3 fetch_invoices.py list       [--port 9222] [--days 30]
-  python3 fetch_invoices.py collect    [--port 9222] [--days 30] [--output-dir DIR] [--default-title 抬头]
+  python3 fetch_invoices.py open-login --email 你的邮箱 [--profile-dir DIR] [--port 9222]
+  python3 fetch_invoices.py list       [--port 9222] [--days 31]
+  python3 fetch_invoices.py collect    [--port 9222] [--days 31] [--output-dir DIR] [--default-title 抬头]
 
 流程约定（用户修正后的规则，勿改）：
+  - 任意邮箱：用户给什么邮箱，就打开什么邮箱的登录页；登录后流程一致
   - 只下载 PDF 和图片（.pdf/.png/.jpg/.jpeg/.gif/.bmp/.webp/.tif/.tiff）
   - 严格跳过 .xml 和 .ofd，其它扩展名也一律不下载
   - 不生成 运行结果.json
+  - 发票若以链接形式提供：点开链接，下载 PDF 格式的电子发票
   - 打开邮件后必须校验阅读窗已切换到目标邮件，再提取附件/链接（防残留 DOM）
-  - 无附件的发票通知邮件，扫描正文里的税务平台交付链接（chinatax/dppt），只取 Wjgs=PDF
   - 文件按 SHA1 去重；二维码小票移入 需要二次扫码/
+  - 默认范围：最近 31 天
 """
 import argparse
 import hashlib
-import json
 import re
 import subprocess
 import sys
@@ -35,10 +36,38 @@ SYSTEM_CHROME = "/Applications/Google Chrome.app"
 ALLOWED_EXTS = {".pdf", ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tif", ".tiff"}
 KEYWORDS = ("发票", "电子发票", "增值税", "开票", "invoice")
 TAX_LINK_HINTS = ("chinatax", "dppt", "exportDzfpwjEwm")
+INVOICE_LINK_TEXT_HINTS = ("发票", "invoice", "下载", "download", "查看")
+
+LOGIN_URLS = {
+    "sina.com": "https://mail.sina.com.cn",
+    "sina.com.cn": "https://mail.sina.com.cn",
+    "163.com": "https://mail.163.com",
+    "126.com": "https://mail.126.com",
+    "qq.com": "https://mail.qq.com",
+    "foxmail.com": "https://mail.qq.com",
+    "gmail.com": "https://mail.google.com",
+    "outlook.com": "https://outlook.office.com",
+    "hotmail.com": "https://outlook.office.com",
+    "yeah.net": "https://mail.yeah.net",
+    "139.com": "https://mail.139.com",
+    "aliyun.com": "https://mail.aliyun.com",
+    # 企业邮箱的特殊登录路径（非 mail.<域名> 根路径）在此单独登记
+    "dehenglaw.com": "https://mail.dehenglaw.com/webmail/cgi/index.cgi",
+}
+
+
+def login_hint(email: str) -> str:
+    domain = email.split("@", 1)[-1].lower() if "@" in email else ""
+    if domain in LOGIN_URLS:
+        return LOGIN_URLS[domain]
+    return f"https://mail.{domain}" if domain else "https://mail.sina.com.cn"
 
 
 def cmd_open_login(args):
     """打开专用浏览器窗口（带 CDP 调试端口），等用户手动登录邮箱。"""
+    if not args.email:
+        raise SystemExit("请提供邮箱：--email 你的邮箱（用户输入什么邮箱，就打开什么邮箱的登录页）")
+    url = args.login_url or login_hint(args.email)
     profile = Path(args.profile_dir).expanduser()
     profile.mkdir(parents=True, exist_ok=True)
     app = CHROME_FOR_TESTING if Path(CHROME_FOR_TESTING).exists() else SYSTEM_CHROME
@@ -47,7 +76,7 @@ def cmd_open_login(args):
         f"--user-data-dir={profile}",
         f"--remote-debugging-port={args.port}",
         "--no-first-run", "--no-default-browser-check",
-        "https://mail.sina.com.cn",
+        url,
     ], check=True)
     time.sleep(5)
     import urllib.request
@@ -56,19 +85,25 @@ def cmd_open_login(args):
             print("CDP 就绪:", r.read(120).decode(errors="ignore"))
     except Exception as e:
         print("警告：CDP 端口未就绪:", e)
-    print(f"\n请在打开的窗口登录邮箱，完成后告诉 agent『好了』，再执行 collect。")
+    print(f"\n已打开 {url}\n请在该窗口登录 {args.email}，完成后告诉 agent『好了』，再执行 collect。")
 
 
-def connect(port):
+def connect(port, email=""):
     from playwright.sync_api import sync_playwright
     pw = sync_playwright().start()
     browser = pw.chromium.connect_over_cdp(f"http://127.0.0.1:{port}")
     ctx = browser.contexts[0]
-    pages = [p for p in ctx.pages if "mail.sina" in p.url]
-    if not pages:
+    pages = [p for p in ctx.pages if p.url and not p.url.startswith("about:")]
+    if email and "@" in email:
+        domain = email.split("@", 1)[-1].lower()
+        hit = [p for p in pages if domain in p.url]
+        if hit:
+            return pw, ctx, hit[0]
+    mailish = [p for p in pages if re.search(r"mail|outlook|gmail", p.url, re.I)]
+    page = (mailish or pages or [None])[0]
+    if page is None:
         pw.stop()
-        raise SystemExit("未找到新浪邮箱标签页，请先 open-login 并登录。")
-    page = pages[0]
+        raise SystemExit("未找到邮箱标签页，请先 open-login 并登录。")
     page.set_default_timeout(30000)
     return pw, ctx, page
 
@@ -76,7 +111,7 @@ def connect(port):
 def open_inbox(page):
     for fr in [page] + page.frames:
         try:
-            el = fr.query_selector("text=收件夹")
+            el = fr.query_selector("text=收件夹") or fr.query_selector("text=收件箱") or fr.query_selector("text=Inbox")
             if el:
                 el.click()
                 page.wait_for_timeout(5000)
@@ -86,8 +121,11 @@ def open_inbox(page):
     return False
 
 
+def is_sina(page) -> bool:
+    return "sina.com" in page.url
+
+
 def parse_row_date(text, today):
-    """从行文本首段解析日期：'11 小时前'/'昨天11:05'/'7月20日'/'2025年12月30日'。"""
     head = text.split("|")[0].strip()
     if "小时前" in head or "分钟前" in head or "刚刚" in head:
         return today
@@ -100,13 +138,10 @@ def parse_row_date(text, today):
     if m:
         d = datetime(today.year, int(m.group(1)), int(m.group(2))).date()
         return d if d <= today else datetime(today.year - 1, int(m.group(1)), int(m.group(2))).date()
-    m = re.match(r"^周[一二三四五六日天]$", head)
-    if m:
-        return today  # 本周内，粗估
     return None
 
 
-def list_rows(page, days):
+def list_rows_sina(page, days):
     frame = page.main_frame
     rows = frame.evaluate("""() => {
         const out = [];
@@ -135,7 +170,7 @@ def list_rows(page, days):
     return matched
 
 
-def wait_mail_open(page, mid, subject, timeout=20):
+def wait_mail_open_sina(page, mid, subject, timeout=20):
     """确认阅读窗已切换到目标邮件（防止读到上一封的残留 DOM）。"""
     frame = page.main_frame
     deadline = time.time() + timeout
@@ -145,7 +180,6 @@ def wait_mail_open(page, mid, subject, timeout=20):
                 .map(a => { const m = a.href.match(/[?&]mid=([0-9A-F]+)/); return m ? m[1] : ''; })""")
         if att_mids and all(m.upper() == mid.upper() for m in att_mids if m):
             return True
-        # 无附件邮件：校验阅读窗主题文本
         head = frame.evaluate("""() => {
             const cands = document.querySelectorAll('.subject, [class*=mailTitle], [class*=mail_subject], h1, h2');
             return Array.from(cands).map(e => (e.innerText||'').trim()).join(' ');
@@ -153,10 +187,8 @@ def wait_mail_open(page, mid, subject, timeout=20):
         if subject and subject[:12] in head:
             return True
         if not att_mids:
-            # 无附件链接时给主题校验更多机会
             page.wait_for_timeout(1000)
         else:
-            # 有附件链接但 mid 不匹配 = 残留，重新点击
             frame.evaluate(
                 """(mid) => { const el = document.querySelector('div.listrow[mid="' + mid + '"] a.subject'); if (el) el.click(); }""",
                 mid)
@@ -164,15 +196,11 @@ def wait_mail_open(page, mid, subject, timeout=20):
     return False
 
 
-def download(ctx, url, out_dir, fname):
+def save_file(body, out_dir, fname):
     ext = Path(urllib.parse.unquote(fname)).suffix.lower()
     if ext not in ALLOWED_EXTS:
         return None, f"跳过（不允许的格式 {ext}）: {fname}"
-    resp = ctx.request.get(url, timeout=60000, max_redirects=10)
-    if not resp.ok:
-        return None, f"下载失败 HTTP {resp.status}: {fname}"
-    body = resp.body()
-    if ext == ".pdf" and not body[:4] == b"%PDF":
+    if ext == ".pdf" and body[:4] != b"%PDF":
         return None, f"非 PDF 内容: {fname}"
     safe = re.sub(r'[\\/:*?"<>|]', "_", urllib.parse.unquote(fname))
     target = out_dir / safe
@@ -186,8 +214,136 @@ def download(ctx, url, out_dir, fname):
     return target, f"已保存: {safe} ({len(body)} bytes)"
 
 
+def download(ctx, url, out_dir, fname):
+    try:
+        resp = ctx.request.get(url, timeout=60000, max_redirects=10)
+    except Exception as e:
+        return None, f"下载异常: {e}"
+    if not resp.ok:
+        return None, f"下载失败 HTTP {resp.status}: {fname}"
+    return save_file(resp.body(), out_dir, fname)
+
+
+def filename_from_cd(resp, fallback):
+    cd = resp.headers.get("content-disposition", "")
+    m = re.search(r"filename\*?=(?:UTF-8''|\")?([^\";]+)", cd, re.I)
+    return urllib.parse.unquote(m.group(1)) if m else fallback
+
+
+def collect_body_links(page):
+    """收集当前打开邮件正文里的候选链接（文本或 href 含发票/下载语义的外部链接）。"""
+    out = []
+    for fr in page.frames:
+        try:
+            links = fr.evaluate("""() => Array.from(document.querySelectorAll('a[href]'))
+                .map(a => ({t: (a.innerText||'').trim(), h: a.href}))
+                .filter(x => x.h.startsWith('http'))""")
+            out.extend(links)
+        except Exception:
+            continue
+    # 链接文本本身就是 URL 的情况（如税务平台交付链接）
+    for fr in page.frames:
+        try:
+            texts = fr.evaluate("""() => Array.from(document.querySelectorAll('a'))
+                .map(a => (a.innerText||'').trim()).filter(t => t.startsWith('http'))""")
+            out.extend({"t": t, "h": t} for t in texts)
+        except Exception:
+            continue
+    seen, res = set(), []
+    for x in out:
+        key = x["h"]
+        if key in seen:
+            continue
+        seen.add(key)
+        res.append(x)
+    return res
+
+
+def fetch_pdf_from_link(ctx, page, link, out_dir):
+    """点开正文链接，下载 PDF 格式电子发票。返回 (Path|None, msg)。"""
+    href, text = link["h"], link["t"]
+    candidates = []
+    # 税务平台交付链接：只取 Wjgs=PDF
+    for u in {href, text}:
+        if any(h in u for h in TAX_LINK_HINTS):
+            if "Wjgs=PDF" in u:
+                candidates.append(u)
+            continue
+        path = urllib.parse.urlsplit(u).path.lower()
+        if path.endswith(".pdf"):
+            candidates.append(u)
+    for url in dict.fromkeys(candidates):
+        fphm = re.search(r"Fphm=(\d+)", url)
+        fname = f"invoice_{fphm.group(1) if fphm else hashlib.sha1(url.encode()).hexdigest()[:8]}.pdf"
+        fp, msg = download(ctx, url, out_dir, fname)
+        if fp:
+            return fp, msg
+    # 其它发票链接：打开落地页找 PDF 下载入口
+    if not any(h in text + href for h in INVOICE_LINK_TEXT_HINTS):
+        return None, "非发票链接，未跟进"
+    landing = None
+    try:
+        landing = ctx.new_page()
+        landing.set_default_timeout(20000)
+        landing.goto(href, wait_until="domcontentloaded", timeout=45000)
+        landing.wait_for_timeout(5000)
+        pdf_links = landing.evaluate("""() => Array.from(document.querySelectorAll('a[href]'))
+            .map(a => a.href).filter(h => h.toLowerCase().split('?')[0].endsWith('.pdf'))""")
+        for url in dict.fromkeys(pdf_links):
+            fp, msg = download(ctx, url, out_dir, url.split("/")[-1].split("?")[0] or "invoice.pdf")
+            if fp:
+                return fp, f"落地页 " + msg
+        # 页面本身可能直接返回 PDF（跳转后）
+        if landing.url.lower().split("?")[0].endswith(".pdf"):
+            fp, msg = download(ctx, landing.url, out_dir, landing.url.split("/")[-1].split("?")[0])
+            if fp:
+                return fp, f"落地页直链 " + msg
+        return None, "落地页未找到 PDF 下载入口"
+    except Exception as e:
+        return None, f"落地页打开失败: {e}"
+    finally:
+        if landing:
+            try:
+                landing.close()
+            except Exception:
+                pass
+
+
+def process_files(files, subject, sender, args, out_dir, qr_dir, seen, downloaded, rows_out, qr_paths):
+    skipped = 0
+    for fp in files:
+        h = hashlib.sha1(fp.read_bytes()).hexdigest()
+        if h in seen:
+            print(f"  重复跳过: {fp.name}")
+            fp.unlink()
+            skipped += 1
+            continue
+        seen.add(h)
+        if fp.suffix.lower() in invoice_lib.IMAGE_EXTS:
+            text = invoice_lib.extract_text_for_file(fp)
+            if invoice_lib.is_likely_qr_image(fp, text):
+                tgt = invoice_lib.move_to_qr_folder(fp, qr_dir)
+                qr_paths.append(tgt)
+                print(f"  疑似二维码小票，移入待扫码: {tgt.name}")
+                continue
+        fields = extract_fields_pypdf(fp) if fp.suffix.lower() == ".pdf" else None
+        if fields is None:
+            fields = invoice_lib.parse_invoice_fields(
+                fp, subject=subject, sender=sender, fallback_title=args.default_title)
+        if fields.get("title") in ("", "待补充"):
+            fields["title"] = args.default_title or "待补充"
+        try:
+            renamed = invoice_lib.rename_invoice_file(fp, fields)
+        except Exception:
+            renamed = fp
+        print(f"  入账: {renamed.name}")
+        downloaded.append(renamed)
+        rows_out.append({"amount": fields["amount"], "project": fields["project"],
+                         "title": fields["title"], "invoice_no": fields["invoice_no"]})
+    return skipped
+
+
 def extract_fields_pypdf(fp):
-    """pypdf 提取发票字段；失败返回 None。"""
     try:
         from pypdf import PdfReader
         text = "\n".join((p.extract_text() or "") for p in PdfReader(str(fp)).pages)
@@ -206,10 +362,13 @@ def extract_fields_pypdf(fp):
 
 
 def cmd_list(args):
-    pw, ctx, page = connect(args.port)
+    pw, ctx, page = connect(args.port, args.email)
     try:
+        if not is_sina(page):
+            print("当前邮箱非新浪网页版，list 仅支持新浪；可直接 collect（通用模式会扫描当前打开页面）。")
+            return
         open_inbox(page)
-        rows = list_rows(page, args.days)
+        rows = list_rows_sina(page, args.days)
         print(f"最近 {args.days} 天匹配发票关键词的邮件 {len(rows)} 封：")
         for r in rows:
             print(f"  [{r['dateText']}] {r['sender']} | {r['subject'][:50]} | mid={r['mid'][:8]}")
@@ -223,95 +382,84 @@ def cmd_collect(args):
     qr_dir = out_dir / "需要二次扫码"
     qr_dir.mkdir(exist_ok=True)
 
-    pw, ctx, page = connect(args.port)
-    downloaded, rows_out, qr_paths, skipped = [], [], [], 0
+    pw, ctx, page = connect(args.port, args.email)
+    downloaded, rows_out, qr_paths = [], [], []
     seen = set()
+    skipped = 0
     try:
-        open_inbox(page)
-        mails = list_rows(page, args.days)
-        print(f"匹配邮件 {len(mails)} 封，开始处理…")
-        frame = page.main_frame
-        for mail in mails:
-            mid, subject, sender = mail["mid"], mail["subject"], mail["sender"]
-            print(f"\n=== {subject[:45]}")
+        if is_sina(page):
             open_inbox(page)
-            frame.evaluate(
-                """(mid) => { const el = document.querySelector('div.listrow[mid="' + mid + '"] a.subject'); if (el) el.click(); }""",
-                mid)
-            page.wait_for_timeout(5000)
-            if not wait_mail_open(page, mid, subject):
-                print("  !! 阅读窗未确认切换，跳过以防误抓")
-                skipped += 1
-                continue
-
-            files = []
-            # 1) 附件（仅 PDF/图片，跳过 xml/ofd/其它）
-            att_links = frame.evaluate(
-                """() => Array.from(document.querySelectorAll('a[href*="base_download_att.php"]')).map(a => a.href)""")
-            for href in dict.fromkeys(att_links):
-                qs = urllib.parse.parse_qs(urllib.parse.urlparse(href).query)
-                fname = qs.get("file_name", ["att.bin"])[0]
-                fp, msg = download(ctx, href, out_dir, fname)
-                print("  " + msg)
-                if fp:
-                    files.append((fp, fname))
-                else:
-                    skipped += 1
-
-            # 2) 无附件：扫正文税务平台交付链接（只取 PDF）
-            if not files:
-                links = frame.evaluate("""() => Array.from(document.querySelectorAll('a'))
-                    .map(a => (a.innerText||'').trim())
-                    .filter(t => t.startsWith('http'))""")
-                pdf_urls = [t for t in dict.fromkeys(links)
-                            if any(h in t for h in TAX_LINK_HINTS) and "Wjgs=PDF" in t]
-                for url in pdf_urls:
-                    fphm = re.search(r"Fphm=(\d+)", url)
-                    fname = f"dppt_{fphm.group(1) if fphm else 'unknown'}.pdf"
-                    fp, msg = download(ctx, url, out_dir, fname)
-                    print("  正文链接 " + msg)
-                    if fp:
-                        files.append((fp, fname))
-                    else:
-                        skipped += 1
-                if not pdf_urls:
-                    print("  未发现附件或税务交付链接")
-
-            # 3) 去重 + 处理
-            for fp, fname in files:
-                h = hashlib.sha1(fp.read_bytes()).hexdigest()
-                if h in seen:
-                    print(f"  重复跳过: {fp.name}")
-                    fp.unlink()
+            mails = list_rows_sina(page, args.days)
+            print(f"匹配邮件 {len(mails)} 封，开始处理…")
+            frame = page.main_frame
+            for mail in mails:
+                mid, subject, sender = mail["mid"], mail["subject"], mail["sender"]
+                print(f"\n=== {subject[:45]}")
+                open_inbox(page)
+                frame.evaluate(
+                    """(mid) => { const el = document.querySelector('div.listrow[mid="' + mid + '"] a.subject'); if (el) el.click(); }""",
+                    mid)
+                page.wait_for_timeout(5000)
+                if not wait_mail_open_sina(page, mid, subject):
+                    print("  !! 阅读窗未确认切换，跳过以防误抓")
                     skipped += 1
                     continue
-                seen.add(h)
-                if fp.suffix.lower() in invoice_lib.IMAGE_EXTS:
-                    text = invoice_lib.extract_text_for_file(fp)
-                    if invoice_lib.is_likely_qr_image(fp, text):
-                        tgt = invoice_lib.move_to_qr_folder(fp, qr_dir)
-                        qr_paths.append(tgt)
-                        print(f"  疑似二维码小票，移入待扫码: {tgt.name}")
-                        continue
-                fields = extract_fields_pypdf(fp) if fp.suffix.lower() == ".pdf" else None
-                if fields is None:
-                    fields = invoice_lib.parse_invoice_fields(
-                        fp, subject=subject, sender=sender,
-                        fallback_title=args.default_title)
-                if fields.get("title") in ("", "待补充"):
-                    fields["title"] = args.default_title or "待补充"
+                files = []
+                att_links = frame.evaluate(
+                    """() => Array.from(document.querySelectorAll('a[href*="base_download_att.php"]')).map(a => a.href)""")
+                for href in dict.fromkeys(att_links):
+                    qs = urllib.parse.parse_qs(urllib.parse.urlparse(href).query)
+                    fname = qs.get("file_name", ["att.bin"])[0]
+                    fp, msg = download(ctx, href, out_dir, fname)
+                    print("  " + msg)
+                    if fp:
+                        files.append(fp)
+                    else:
+                        skipped += 1
+                if not files:
+                    found = False
+                    for link in collect_body_links(page):
+                        fp, msg = fetch_pdf_from_link(ctx, page, link, out_dir)
+                        if fp:
+                            print("  正文链接 " + msg)
+                            files.append(fp)
+                            found = True
+                    if not found:
+                        print("  未发现附件或可用的发票链接")
+                skipped += process_files(files, subject, sender, args, out_dir, qr_dir,
+                                         seen, downloaded, rows_out, qr_paths)
+        else:
+            # 通用模式：扫描当前打开的页面（附件链接 + 正文发票链接）
+            print("通用模式：扫描当前页面…（非新浪邮箱请先手动打开目标发票邮件）")
+            files = []
+            for fr in page.frames:
                 try:
-                    renamed = invoice_lib.rename_invoice_file(fp, fields)
+                    atts = fr.evaluate("""() => Array.from(document.querySelectorAll('a[href]'))
+                        .map(a => ({t:(a.innerText||'').trim(), h:a.href}))
+                        .filter(x => /\\.(pdf|png|jpe?g|gif|bmp|webp|tiff?)(\\?|$)/i.test(x.h))""")
+                    for a in atts:
+                        fp, msg = download(ctx, a["h"], out_dir,
+                                           a["h"].split("/")[-1].split("?")[0] or "file.pdf")
+                        print("  " + msg)
+                        if fp:
+                            files.append(fp)
+                        else:
+                            skipped += 1
                 except Exception:
-                    renamed = fp
-                print(f"  入账: {renamed.name}")
-                downloaded.append(renamed)
-                rows_out.append({"amount": fields["amount"], "project": fields["project"],
-                                 "title": fields["title"], "invoice_no": fields["invoice_no"]})
+                    continue
+            if not files:
+                for link in collect_body_links(page):
+                    fp, msg = fetch_pdf_from_link(ctx, page, link, out_dir)
+                    if fp:
+                        print("  正文链接 " + msg)
+                        files.append(fp)
+            if not files:
+                print("  当前页面未发现发票文件，请打开目标邮件后重试")
+            skipped += process_files(files, "", "", args, out_dir, qr_dir,
+                                     seen, downloaded, rows_out, qr_paths)
     finally:
         pw.stop()
 
-    # 4) 汇总产物（不生成 运行结果.json）
     invoice_lib.write_xlsx(out_dir / "发票清单.xlsx", rows_out)
     invoice_lib.build_four_up_pdf(downloaded, out_dir / "发票_四拼一汇总.pdf")
     (out_dir / "发票文件名清单.txt").write_text("\n".join(str(p) for p in downloaded), encoding="utf-8")
@@ -324,11 +472,13 @@ def cmd_collect(args):
 
 
 def main():
-    p = argparse.ArgumentParser(description="新浪邮箱发票抓取（仅 PDF/图片）")
+    p = argparse.ArgumentParser(description="邮箱发票抓取（任意邮箱，仅 PDF/图片）")
     p.add_argument("command", choices=["open-login", "list", "collect"])
+    p.add_argument("--email", default="", help="用户邮箱；open-login 必填（给什么邮箱打开什么登录页）")
+    p.add_argument("--login-url", default="", help="手动指定登录页 URL（企业邮箱特殊路径时用，优先级高于域名推断）")
     p.add_argument("--port", type=int, default=9222)
     p.add_argument("--profile-dir", default=str(Path.home() / ".invoice-fetch" / "profile"))
-    p.add_argument("--days", type=int, default=30)
+    p.add_argument("--days", type=int, default=31, help="只检索最近 N 天，默认 31，0 表示全部")
     p.add_argument("--output-dir", default=str(Path.home() / "Downloads" / "发票"))
     p.add_argument("--default-title", default="北京德恒（深圳）律师事务所")
     args = p.parse_args()
