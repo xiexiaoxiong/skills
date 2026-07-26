@@ -182,7 +182,7 @@ def wait_mail_open_sina(page, mid, subject, timeout=20):
             return True
         head = frame.evaluate("""() => {
             const cands = document.querySelectorAll('.subject, [class*=mailTitle], [class*=mail_subject], h1, h2');
-            return Array.from(cands).map(e => (e.innerText||'').trim()).join(' ');
+            return Array.from(cands).filter(e => !e.closest('div.listrow')).map(e => (e.innerText||'').trim()).join(' ');
         }""")
         if subject and subject[:12] in head:
             return True
@@ -309,13 +309,16 @@ def fetch_pdf_from_link(ctx, page, link, out_dir):
                 pass
 
 
-def process_files(files, subject, sender, args, out_dir, qr_dir, seen, downloaded, rows_out, qr_paths):
+def process_files(files, subject, sender, args, out_dir, qr_dir, seen, downloaded, rows_out, qr_paths, preexisting=frozenset()):
     skipped = 0
     for fp in files:
         h = hashlib.sha1(fp.read_bytes()).hexdigest()
         if h in seen:
-            print(f"  重复跳过: {fp.name}")
-            fp.unlink()
+            if fp in preexisting:
+                print(f"  已在库中（本轮跳过）: {fp.name}")
+            else:
+                print(f"  重复跳过: {fp.name}")
+                fp.unlink()
             skipped += 1
             continue
         seen.add(h)
@@ -358,6 +361,7 @@ def extract_fields_pypdf(fp):
         "invoice_no": no[0] if no else "待补充",
         "amount": amt[-1] if amt else "待补充",
         "project": proj[0] if proj else "待补充",
+        "title": "",
     }
 
 
@@ -386,6 +390,12 @@ def cmd_collect(args):
     downloaded, rows_out, qr_paths = [], [], []
     seen = set()
     skipped = 0
+    # 预置输出目录中已有文件的哈希，避免重复通知邮件把旧发票再入一次账
+    preexisting = set()
+    for old in out_dir.iterdir():
+        if old.is_file() and old.suffix.lower() in ALLOWED_EXTS and "四拼一" not in old.name:
+            seen.add(hashlib.sha1(old.read_bytes()).hexdigest())
+            preexisting.add(old)
     try:
         if is_sina(page):
             open_inbox(page)
@@ -427,7 +437,7 @@ def cmd_collect(args):
                     if not found:
                         print("  未发现附件或可用的发票链接")
                 skipped += process_files(files, subject, sender, args, out_dir, qr_dir,
-                                         seen, downloaded, rows_out, qr_paths)
+                                         seen, downloaded, rows_out, qr_paths, preexisting)
         else:
             # 通用模式：扫描当前打开的页面（附件链接 + 正文发票链接）
             print("通用模式：扫描当前页面…（非新浪邮箱请先手动打开目标发票邮件）")
@@ -456,7 +466,7 @@ def cmd_collect(args):
             if not files:
                 print("  当前页面未发现发票文件，请打开目标邮件后重试")
             skipped += process_files(files, "", "", args, out_dir, qr_dir,
-                                     seen, downloaded, rows_out, qr_paths)
+                                     seen, downloaded, rows_out, qr_paths, preexisting)
     finally:
         pw.stop()
 
