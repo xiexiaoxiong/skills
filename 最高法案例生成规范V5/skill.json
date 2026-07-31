@@ -1,0 +1,23 @@
+{
+  "name": "最高法案例生成规范V5",
+  "title": "最高法案例整理与裁判规则提炼",
+  "version": "1.0.0",
+  "author": "林沛阳",
+  "category": "检索核查",
+  "description": "按最高法案例八段规范（基本信息、裁判要点、基本案情、裁判结果、裁判理由、裁判规则提炼、法律法规、案例意义）生成可直接入库的案例整理稿：法条必须写出条文内容并核验现行有效、按三级来源取用，裁判规则只从裁判要点忠实提炼、不自由发挥，排版可直接复制进 Word。",
+  "boundaries": "见 SKILL.md 能力边界与「本 skill 不做什么」。",
+  "license": "internal",
+  "visibility": "open",
+  "reg_no": 5,
+  "review": {
+    "self_check": "2026-07-22",
+    "ai_scan": "2026-07-22",
+    "human_review": {
+      "reviewer": "黄霁",
+      "date": "2026-07-22"
+    }
+  },
+  "title_en": "SPC Case Digest & Adjudication Rule Extraction",
+  "description_en": "Generate case digests of Supreme People's Court cases in a mandatory eight-part structure, with full statute text verified as currently effective, adjudication rules distilled faithfully from the holding, and Word-ready formatting — ready for your case bank.",
+  "author_org": "德恒深圳律所"
+}
