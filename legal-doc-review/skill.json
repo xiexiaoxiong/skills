@@ -1,0 +1,23 @@
+{
+  "name": "legal-doc-review",
+  "title": "法律文书逐字审查",
+  "title_en": "Legal Document Line-by-Line Review",
+  "version": "1.0.0",
+  "author": "陈琦",
+  "author_org": "德恒深圳律所",
+  "category": "文书起草",
+  "description": "面向中文法律文书呈交法庭前的系统性审查工具，用五轮结构化检查替代人工通读：第一轮核对客观事实，日期、金额、百分比逐项追溯到证据原始页码；第二轮核查法律引用，强制核验法条效力状态（是否废止、失效、被替代）并逐字比对引文；第三轮验证逻辑闭环，总结段数字与正文逐项列举须自洽；第四轮逐字挑错，覆盖同音错字、GB/T 15834 标点规范与 DOCX 英文引号 Unicode 扫描；第五轮核验格式排版。每条发现标注高、中、低置信度，拿不准的标注待核实交律师判断，绝不装作确定。支持关联文件交叉验证与跨案模板复用的归零核对，复杂案件可开启事实核验、法律审校、语言文字三路多 Agent 并行。适用起诉状、答辩状、证据目录、代理意见、上诉状定稿。",
+  "description_en": "A pre-filing quality gate for Chinese legal documents that replaces a manual read-through with a five-pass structured review: objective facts traced to the source evidence page, legal citations checked for validity status (repealed, expired, superseded) and quoted verbatim, logic checked for consistency between the summary and the body, language scanned for homophone typos, GB/T 15834 punctuation and DOCX straight-quote Unicode, and formatting verified item by item. Every finding carries a high/medium/low confidence label, and anything uncertain is flagged for the lawyer to verify rather than asserted. Supports cross-file consistency checks, zero-based re-verification of reused templates, and an optional three-agent parallel mode (facts, law, language) for complex cases. Fits complaints, defenses, evidence lists, agent opinions and appeals before filing.",
+  "boundaries": "见 SKILL.md 能力边界与「本 skill 不做什么」。",
+  "license": "internal",
+  "visibility": "open",
+  "reg_no": 6,
+  "review": {
+    "self_check": "2026-07-24",
+    "ai_scan": "2026-07-24",
+    "human_review": {
+      "reviewer": "黄霁",
+      "date": "2026-07-24"
+    }
+  }
+}
